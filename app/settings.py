@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'Corretores',
     'Imoveis',
     'Fotos',
+
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
