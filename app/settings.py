@@ -128,3 +128,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # URL base para acessar os arquivos
 MEDIA_URL = "/media/"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
