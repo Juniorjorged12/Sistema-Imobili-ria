@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar imóvel{% endblock %}
+
+{% block content %}
+<div class="page-heading"><div><div class="page-kicker">Painel de gestão</div><h1 class="page-title h2">Cadastrar imóvel</h1></div><a class="btn btn-outline-secondary" href="{% url list_url %}">Voltar para imóveis</a></div>
+<div class="panel">
+    <p class="text-secondary">Informe os dados principais para adicionar um imóvel ao catálogo.</p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+            {% for field in form %}<div class="col-md-6">
+                {% if field.field.widget.input_type == "checkbox" %}<div class="form-check mt-2">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+                {% else %}<label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>{% endfor %}
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-outline-secondary" href="{% url list_url %}">Cancelar</a><button class="btn btn-gold px-4" type="submit">Salvar imóvel</button></div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Fotos dos imóveis{% endblock %}
+
+{% block content %}
+<div class="page-heading"><div><div class="page-kicker">Galeria de imagens</div><h1 class="page-title h2">Fotos dos imóveis</h1></div><a class="btn btn-gold" href="{% url create_url %}">+ Adicionar foto</a></div>
+{% if rows %}<div class="row g-4">{% for row in rows %}<div class="col-md-6 col-xl-4"><article class="property-card">
+    {% if row.object.imagem %}<img class="property-photo" src="{{ row.object.imagem.url }}" alt="Foto do imóvel #{{ row.object.imovel_id }}">{% else %}<div class="photo-placeholder">▧</div>{% endif %}
+    <div class="p-3"><div class="page-kicker">Imóvel #{{ row.object.imovel_id }}</div><h2 class="h6">{{ row.object.imovel }}</h2>{% if row.object.destaque %}<span class="badge text-bg-light text-gold">Destaque</span>{% endif %}<div class="d-flex gap-2 mt-3"><a class="btn btn-sm btn-outline-gold" href="{% url detail_url row.object.pk %}">Detalhes</a><a class="btn btn-sm btn-outline-secondary" href="{% url update_url row.object.pk %}">Editar</a></div></div>
+</article></div>{% endfor %}</div>{% else %}<div class="panel text-center py-5"><div class="page-kicker mb-2">Destaque cada imóvel</div><p class="text-secondary">Nenhuma foto cadastrada.</p><a class="btn btn-gold" href="{% url create_url %}">Adicionar primeira foto</a></div>{% endif %}
+{% endblock %}

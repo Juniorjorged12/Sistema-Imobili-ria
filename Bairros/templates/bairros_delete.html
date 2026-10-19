@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir bairro{% endblock %}
+
+{% block content %}
+<div class="page-heading"><div><div class="page-kicker">Localizações</div><h1 class="page-title h2">Excluir bairro</h1></div></div>
+<div class="panel"><p>Deseja realmente excluir este bairro?</p><div class="rounded-3 p-3 mb-3" style="background:#f3f5f7"><strong>{{ object.nome }}</strong><div class="text-secondary">{{ object.cidade.nome }}</div></div><p class="small text-secondary">Bairros vinculados a imóveis não podem ser removidos.</p><form method="post">{% csrf_token %}<div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-outline-secondary" href="{% url detail_url object.pk %}">Cancelar</a><button class="btn btn-danger" type="submit">Excluir bairro</button></div></form></div>
+{% endblock %}

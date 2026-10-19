@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Corretores{% endblock %}
+
+{% block content %}
+<div class="page-heading"><div><div class="page-kicker">Equipe imobiliária</div><h1 class="page-title h2">Corretores</h1></div><a class="btn btn-gold" href="{% url create_url %}">+ Novo corretor</a></div>
+<div class="panel">
+    {% if rows %}<div class="table-responsive"><table class="table table-hover mb-0">
+        <thead><tr>{% for label in column_labels %}<th>{{ label }}</th>{% endfor %}<th class="text-end">Ações</th></tr></thead>
+        <tbody>{% for row in rows %}<tr>{% for value in row.values %}<td>{{ value|default:"—" }}</td>{% endfor %}<td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-gold" href="{% url detail_url row.object.pk %}">Perfil</a> <a class="btn btn-sm btn-outline-secondary" href="{% url update_url row.object.pk %}">Editar</a></td></tr>{% endfor %}</tbody>
+    </table></div>{% else %}<div class="text-center py-5"><div class="page-kicker mb-2">Nossa equipe</div><p class="text-secondary">Nenhum corretor cadastrado.</p><a class="btn btn-gold" href="{% url create_url %}">Cadastrar corretor</a></div>{% endif %}
+</div>
+{% endblock %}

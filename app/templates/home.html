@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Início{% endblock %}
+
+{% block content %}
+<section class="rounded-4 p-4 p-lg-5 mb-4" style="background:linear-gradient(120deg,#10243a 0%,#183652 100%);color:#fff">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <div class="page-kicker mb-2">Encontre seu próximo capítulo</div>
+            <h1 class="display-5 fw-bold mb-3">O lugar certo muda tudo.</h1>
+            <p class="lead mb-4" style="color:#d4dde5">Explore imóveis selecionados para morar, investir ou começar uma nova fase.</p>
+            <a class="btn btn-gold btn-lg" href="{% url 'imoveis_list' %}">Explorar imóveis <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block" aria-hidden="true">
+            <span style="font-size:7rem;color:#e2c477">⌂</span>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3 mb-5">
+    <div class="col-6 col-lg-3"><div class="stat-card h-100"><div class="stat-value">{{ total_imoveis }}</div><div class="stat-label">Imóveis cadastrados</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card h-100"><div class="stat-value">{{ total_cidades }}</div><div class="stat-label">Cidades atendidas</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card h-100"><div class="stat-value">{{ total_bairros }}</div><div class="stat-label">Bairros cadastrados</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card h-100"><div class="stat-value">{{ total_corretores }}</div><div class="stat-label">Corretores</div></div></div>
+</div>
+
+<div class="page-heading">
+    <div>
+        <div class="page-kicker">Seleção especial</div>
+        <h2 class="page-title h3">Imóveis em destaque</h2>
+    </div>
+    <a class="btn btn-outline-gold" href="{% url 'imoveis_list' %}">Ver todos</a>
+</div>
+
+{% if imoveis %}
+    <div class="row g-4">
+        {% for imovel in imoveis %}
+            <div class="col-md-6 col-xl-4">
+                <article class="property-card">
+                    {% with foto=imovel.fotos.all|first %}
+                        {% if foto %}
+                            <a class="property-card-link d-block" href="{% url 'imoveis_detail' imovel.pk %}" aria-label="Ver detalhes do imóvel em {{ imovel.bairro.nome }}, {{ imovel.cidade.nome }}">
+                                <img class="property-photo" src="{{ foto.imagem.url }}" alt="Foto do imóvel em {{ imovel.bairro.nome }}">
+                            </a>
+                        {% else %}
+                            <a class="property-card-link d-block" href="{% url 'imoveis_detail' imovel.pk %}" aria-label="Ver detalhes do imóvel em {{ imovel.bairro.nome }}, {{ imovel.cidade.nome }}">
+                                <div class="photo-placeholder" aria-label="Imóvel sem foto">⌂</div>
+                            </a>
+                        {% endif %}
+                    {% endwith %}
+                    <div class="p-3 p-lg-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge text-bg-light text-gold">{{ imovel.get_finalidade_display }}</span>
+                            <span class="small text-secondary">{{ imovel.get_tipo_display }}</span>
+                        </div>
+                        <h3 class="h5 fw-bold mb-1">
+                            <a class="property-card-link" href="{% url 'imoveis_detail' imovel.pk %}">{{ imovel.bairro.nome }}, {{ imovel.cidade.nome }}</a>
+                        </h3>
+                        <p class="small text-secondary mb-3">{{ imovel.dormitorios }} dormitório(s) · {{ imovel.area_total|floatformat:0 }} m²</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong class="h5 mb-0 text-gold">R$ {{ imovel.valor|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="panel text-center py-5">
+        <div class="page-kicker mb-2">Novidades em breve</div>
+        <h3 class="h5 text-secondary">Ainda não há imóveis cadastrados.</h3>
+        <p class="text-secondary mb-4">Cadastre o primeiro imóvel para começar a montar seu catálogo.</p>
+        <a class="btn btn-gold" href="{% url 'imoveis_create' %}">Cadastrar imóvel</a>
+    </div>
+{% endif %}
+{% endblock %}

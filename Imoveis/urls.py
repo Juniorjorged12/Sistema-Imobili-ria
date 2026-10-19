@@ -3,6 +3,9 @@ from . import views
 
 
 urlpatterns = [
-    path('imoveis/', views.ImovelListCreateView.as_view(), name='imovel-list-create'),
-    path('imoveis/<int:pk>/', views.ImovelRetrieveUpdateDestroyView.as_view(), name='imovel-retrieve-update-destroy'),
+    path('imoveis/', views.ImovelListView.as_view(), name='imoveis_list'),
+    path('imoveis/novo/', views.ImovelCreateView.as_view(), name='imoveis_create'),
+    path('imoveis/<int:pk>/', views.ImovelDetailView.as_view(), name='imoveis_detail'),
+    path('imoveis/<int:pk>/editar/', views.ImovelUpdateView.as_view(), name='imoveis_update'),
+    path('imoveis/<int:pk>/excluir/', views.ImovelDeleteView.as_view(), name='imoveis_delete'),
 ]
