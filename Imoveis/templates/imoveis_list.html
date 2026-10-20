@@ -2,53 +2,102 @@
 
 {% block title %}Imóveis{% endblock %}
 
+{% block extra_head %}
+<style>
+    .listing-search-layout {
+        display: grid;
+        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .listing-search-panel {
+        position: sticky;
+        top: 1.25rem;
+    }
+    @media (max-width: 767.98px) {
+        .listing-search-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .listing-search-panel {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-heading">
     <div>
         <div class="page-kicker">Encontre seu próximo endereço</div>
         <h1 class="page-title h2">Imóveis</h1>
     </div>
-    <a class="btn btn-gold" href="{% url create_url %}">+ Cadastrar imóvel</a>
+    {% if user.is_authenticated %}
+        <a class="btn btn-gold" href="{% url create_url %}">+ Cadastrar imóvel</a>
+    {% endif %}
 </div>
 
-{% if rows %}
-    <div class="row g-4">
-        {% for row in rows %}
-            {% with values=row.values %}
-                <div class="col-md-6 col-xl-4">
-                    <article class="property-card">
-                        {% with foto=row.object.fotos.all|first %}
-                            <a class="property-card-link d-block" href="{% url detail_url row.object.pk %}" aria-label="Ver detalhes do imóvel em {{ values.4 }}, {{ values.3 }}">
-                                {% if foto %}
-                                    <img class="property-photo" src="{{ foto.imagem.url }}" alt="Foto do imóvel em {{ values.4 }}, {{ values.3 }}">
-                                {% else %}
-                                    <div class="photo-placeholder" aria-label="Foto não disponível">⌂</div>
-                                {% endif %}
-                            </a>
-                        {% endwith %}
-                        <div class="p-3 p-lg-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-light text-gold">{{ values.1|title }}</span>
-                                <span class="small text-secondary">{{ values.2|title }}</span>
-                            </div>
-                            <h2 class="h5 fw-bold mb-1">
-                                <a class="property-card-link" href="{% url detail_url row.object.pk %}">{{ values.4 }}, {{ values.3 }}</a>
-                            </h2>
-                            <p class="small text-secondary mb-3">Código {{ values.0 }} · {{ values.6|title }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong class="h5 mb-0 text-gold">R$ {{ values.5|floatformat:2 }}</strong>
-                            </div>
-                        </div>
-                    </article>
+<div class="listing-search-layout">
+    <aside class="panel listing-search-panel" aria-label="Filtros de pesquisa de imóveis">
+        <h2 class="h5 fw-bold mb-3">Pesquisar imóveis</h2>
+        <form method="get" action="{% url list_url %}">
+            {% for field in search_form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
                 </div>
-            {% endwith %}
-        {% endfor %}
-    </div>
-{% else %}
-    <div class="panel text-center py-5">
-        <div class="page-kicker mb-2">Seu catálogo começa aqui</div>
-        <h2 class="h5 text-secondary">Nenhum imóvel cadastrado ainda.</h2>
-        <a class="btn btn-gold mt-3" href="{% url create_url %}">Cadastrar primeiro imóvel</a>
-    </div>
-{% endif %}
+            {% endfor %}
+            {% for error in search_form.non_field_errors %}
+                <div class="alert alert-danger py-2">{{ error }}</div>
+            {% endfor %}
+            <button class="btn btn-gold w-100" type="submit">Buscar</button>
+            <a class="btn btn-outline-secondary w-100 mt-2" href="{% url list_url %}">Limpar filtros</a>
+        </form>
+    </aside>
+
+    <section aria-label="Resultados dos imóveis">
+        {% if rows %}
+            <div class="row g-4">
+                {% for row in rows %}
+                    {% with values=row.values %}
+                        <div class="col-md-6 col-xl-6">
+                            <article class="property-card">
+                                {% with foto=row.object.fotos.all|first %}
+                                    <a class="property-card-link d-block" href="{% url detail_url row.object.pk %}" aria-label="Ver detalhes do imóvel em {{ values.4 }}, {{ values.3 }}">
+                                        {% if foto %}
+                                            <img class="property-photo" src="{{ foto.imagem.url }}" alt="Foto do imóvel em {{ values.4 }}, {{ values.3 }}">
+                                        {% else %}
+                                            <div class="photo-placeholder" aria-label="Foto não disponível">⌂</div>
+                                        {% endif %}
+                                    </a>
+                                {% endwith %}
+                                <div class="p-3 p-lg-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge text-bg-light text-gold">{{ values.1|title }}</span>
+                                        <span class="small text-secondary">{{ values.2|title }}</span>
+                                    </div>
+                                    <h2 class="h5 fw-bold mb-1">
+                                        <a class="property-card-link" href="{% url detail_url row.object.pk %}">{{ values.4 }}, {{ values.3 }}</a>
+                                    </h2>
+                                    <p class="small text-secondary mb-3">Código {{ values.0 }} · {{ values.6|title }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong class="h5 mb-0 text-gold">R$ {{ values.5|floatformat:2 }}</strong>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="panel text-center py-5">
+                <div class="page-kicker mb-2">Busca de imóveis</div>
+                <h2 class="h5 text-secondary">Nenhum imóvel encontrado com esses filtros.</h2>
+                <a class="btn btn-outline-gold mt-3" href="{% url list_url %}">Limpar filtros</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

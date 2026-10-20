@@ -6,7 +6,7 @@
 <div class="page-heading"><div><div class="page-kicker">Painel de gestão</div><h1 class="page-title h2">Cadastrar imóvel</h1></div><a class="btn btn-outline-secondary" href="{% url list_url %}">Voltar para imóveis</a></div>
 <div class="panel">
     <p class="text-secondary">Informe os dados principais para adicionar um imóvel ao catálogo.</p>
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate data-bairros-url="{% url 'bairros_por_cidade' %}">
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
         <div class="row g-3">

@@ -1,10 +1,26 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .serializers import ImovelSerializer
 from .models import Imovel
+from Bairros.models import Bairro
 from rest_framework import generics
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
-from .forms import ImovelForm
+from .forms import ImovelForm, ImovelSearchForm
+
+
+@login_required
+def bairros_por_cidade(request):
+    city_id = request.GET.get("cidade")
+    if not city_id or not city_id.isdecimal():
+        return JsonResponse({"error": "Selecione uma cidade válida."}, status=400)
+
+    bairros = Bairro.objects.filter(cidade_id=city_id).order_by("nome")
+    return JsonResponse(
+        [{"id": bairro.pk, "nome": bairro.nome} for bairro in bairros],
+        safe=False,
+    )
 
 
 class ImovelWebContextMixin:
@@ -39,17 +55,42 @@ class ImovelListView(ListView):
     template_name = 'imoveis_list.html'
     context_object_name = 'imoveis'
 
+    def get_search_form(self):
+        if not hasattr(self, "search_form"):
+            self.search_form = ImovelSearchForm(self.request.GET)
+        return self.search_form
 
     def get_queryset(self):
-        return (
+        queryset = (
             Imovel.objects.select_related("cidade", "bairro")
             .prefetch_related("fotos")
             .order_by("-pk")
         )
+        form = self.get_search_form()
+        if not form.is_valid():
+            return queryset
+
+        filters = form.cleaned_data
+        if filters["finalidade"]:
+            queryset = queryset.filter(finalidade=filters["finalidade"])
+        if filters["tipo"]:
+            queryset = queryset.filter(tipo=filters["tipo"])
+        if filters["cidade"]:
+            queryset = queryset.filter(cidade=filters["cidade"])
+        if filters["bairro"]:
+            queryset = queryset.filter(bairro=filters["bairro"])
+
+        ordering = {
+            "valor_asc": "valor",
+            "valor_desc": "-valor",
+        }.get(filters["ordenacao"], "-pk")
+        return queryset.order_by(ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
+            "search_form": self.get_search_form(),
+            "list_url": "imoveis_list",
             "create_url": "imoveis_create",
             "detail_url": "imoveis_detail",
             "column_labels": ["Código", "Finalidade", "Tipo", "Cidade", "Bairro", "Valor", "Status"],

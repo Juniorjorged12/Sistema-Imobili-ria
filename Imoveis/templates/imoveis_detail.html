@@ -10,7 +10,9 @@
     </div>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" href="{% url list_url %}">Voltar</a>
-        <a class="btn btn-gold" href="{% url update_url object.pk %}">Editar imóvel</a>
+        {% if user.is_authenticated %}
+            <a class="btn btn-gold" href="{% url update_url object.pk %}">Editar imóvel</a>
+        {% endif %}
     </div>
 </div>
 <section class="panel mb-4">
@@ -19,9 +21,11 @@
         <div class="row g-3">
             {% for foto in object.fotos.all %}
                 <div class="col-6 col-lg-4">
-                    <a href="{{ foto.imagem.url }}" target="_blank" rel="noopener noreferrer" aria-label="Abrir imagem {{ forloop.counter }} em tamanho original">
+                    <button class="btn p-0 border-0 w-100" type="button"
+                            data-gallery-index="{{ forloop.counter0 }}"
+                            aria-label="Ampliar foto {{ forloop.counter }}">
                         <img class="property-photo rounded-3" src="{{ foto.imagem.url }}" alt="Foto {{ forloop.counter }} do imóvel em {{ object.bairro.nome }}, {{ object.cidade.nome }}">
-                    </a>
+                    </button>
                     {% if foto.destaque %}<span class="badge text-bg-light text-gold mt-2">Destaque</span>{% endif %}
                 </div>
             {% endfor %}
@@ -31,6 +35,42 @@
         <p class="text-secondary small mt-2 mb-0">Ainda não há fotos cadastradas para este imóvel.</p>
     {% endif %}
 </section>
+{% if object.fotos.all %}
+    <div class="modal fade" id="property-photo-gallery" tabindex="-1" aria-labelledby="property-photo-gallery-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <h2 class="modal-title text-white fs-6" id="property-photo-gallery-label">
+                        Fotos do imóvel — {{ object.bairro.nome }}, {{ object.cidade.nome }}
+                    </h2>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar galeria"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="property-photo-carousel" class="carousel slide" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            {% for foto in object.fotos.all %}
+                                <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                    <img class="d-block w-100 rounded-3" src="{{ foto.imagem.url }}"
+                                         alt="Foto {{ forloop.counter }} do imóvel em {{ object.bairro.nome }}, {{ object.cidade.nome }}"
+                                         style="height: min(70vh, 760px); object-fit: contain;">
+                                    <div class="text-center text-white-50 small py-2">{{ forloop.counter }} de {{ object.fotos.all|length }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if object.fotos.all|length > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#property-photo-carousel" data-bs-slide="prev" aria-label="Foto anterior">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#property-photo-carousel" data-bs-slide="next" aria-label="Próxima foto">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
 <div class="panel">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
         <div>
@@ -54,6 +94,27 @@
         <dt class="col-sm-4 py-2 border-bottom text-secondary">Piscina</dt><dd class="col-sm-8 py-2 border-bottom mb-0">{% if object.piscina %}Sim{% else %}Não{% endif %}</dd>
         <dt class="col-sm-4 py-2 border-bottom text-secondary">Corretor</dt><dd class="col-sm-8 py-2 border-bottom mb-0">{{ object.corretor }}</dd>
     </dl>
-    <div class="d-flex justify-content-end mt-4"><a class="btn btn-outline-danger" href="{% url delete_url object.pk %}">Excluir imóvel</a></div>
+    {% if user.is_authenticated %}
+        <div class="d-flex justify-content-end mt-4"><a class="btn btn-outline-danger" href="{% url delete_url object.pk %}">Excluir imóvel</a></div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (() => {
+        const gallery = document.getElementById("property-photo-gallery");
+        const carouselElement = document.getElementById("property-photo-carousel");
+        if (!gallery || !carouselElement) return;
+
+        const modal = bootstrap.Modal.getOrCreateInstance(gallery);
+        const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement, { interval: false });
+        document.querySelectorAll("[data-gallery-index]").forEach((button) => {
+            button.addEventListener("click", () => {
+                carousel.to(Number(button.dataset.galleryIndex));
+                modal.show();
+            });
+        });
+    })();
+</script>
 {% endblock %}

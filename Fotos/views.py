@@ -29,6 +29,8 @@ class FotoimovelFormStyleMixin:
                 field.widget.attrs["class"] = "form-check-input"
             elif input_type == "select":
                 field.widget.attrs["class"] = "form-select"
+            elif input_type == "file":
+                field.widget.attrs.setdefault("class", "form-control")
             else:
                 field.widget.attrs["class"] = "form-control"
         return form

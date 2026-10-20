@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center py-3 py-lg-5">
+    <section class="panel w-100" style="max-width: 440px">
+        <div class="page-kicker mb-2">Acesso ao sistema</div>
+        <h1 class="page-title h3 mb-2">Bem-vindo ao Imob</h1>
+        <p class="text-secondary mb-4">Entre com seu usuário e senha para continuar.</p>
+
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                Usuário ou senha inválidos. Confira seus dados e tente novamente.
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.username.id_for_label }}">Usuário</label>
+                <input class="form-control" type="text" name="{{ form.username.html_name }}"
+                       id="{{ form.username.id_for_label }}" autocomplete="username"
+                       value="{{ form.username.value|default_if_none:'' }}" required autofocus>
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="{{ form.password.id_for_label }}">Senha</label>
+                <input class="form-control" type="password" name="{{ form.password.html_name }}"
+                       id="{{ form.password.id_for_label }}" autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-gold w-100" type="submit">Entrar</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

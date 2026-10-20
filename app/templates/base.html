@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#10243a">
     <title>{% block title %}Imob{% endblock %} | Imob</title>
+    <script>
+        const initialTheme = localStorage.getItem("imob-theme") === "dark" ? "dark" : "light";
+        document.documentElement.dataset.bsTheme = initialTheme;
+        document.querySelector('meta[name="theme-color"]').content = initialTheme === "dark" ? "#141c26" : "#10243a";
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -18,6 +23,14 @@
             --surface: #fff;
             --page: #f3f5f7;
         }
+        [data-bs-theme="dark"] {
+            --navy: #10243a;
+            --navy-light: #183652;
+            --ink: #e5eaf0;
+            --muted: #aab6c4;
+            --surface: #202b38;
+            --page: #141c26;
+        }
         body { min-height: 100vh; display: flex; flex-direction: column; background: var(--page); color: var(--ink); }
         .site-header, .site-footer { background: var(--navy); color: #fff; }
         .site-header { border-bottom: 3px solid var(--gold); }
@@ -26,6 +39,7 @@
         .header-note { color: #c6d0da; font-size: .9rem; }
         .site-main { flex: 1; }
         .page-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 1.5rem; align-items: start; }
+        .page-layout-login { grid-template-columns: minmax(0, 1fr); }
         .page-content { min-width: 0; }
         .side-menu { position: sticky; top: 1.25rem; background: var(--navy); color: #fff; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 12px 32px #10243a18; }
         .side-menu-title { color: var(--gold-light); font-size: .76rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin: .35rem .7rem .8rem; }
@@ -59,6 +73,17 @@
         .site-footer { border-top: 3px solid var(--gold); }
         .footer-link { color: var(--gold-light); text-decoration: none; }
         .footer-link:hover { color: #fff; }
+        [data-bs-theme="dark"] .page-title,
+        [data-bs-theme="dark"] .form-label,
+        [data-bs-theme="dark"] .stat-value { color: var(--ink); }
+        [data-bs-theme="dark"] .panel,
+        [data-bs-theme="dark"] .stat-card,
+        [data-bs-theme="dark"] .property-card { border-color: #344252; }
+        [data-bs-theme="dark"] .btn-outline-gold { color: var(--gold-light); }
+        [data-bs-theme="dark"] .table thead th { color: var(--ink); background: #263443; }
+        [data-bs-theme="dark"] .property-photo,
+        [data-bs-theme="dark"] .photo-placeholder { background: #263443; }
+        [data-bs-theme="dark"] .badge.text-bg-light { color: var(--gold-light) !important; background: #344252 !important; }
         @media (max-width: 767.98px) {
             .page-layout { grid-template-columns: 1fr; }
             .side-menu { position: static; order: -1; }
@@ -74,7 +99,14 @@
         <div class="container py-3 d-flex align-items-center justify-content-between gap-3">
             <a class="brand" href="{% url 'home' %}"><span class="brand-mark">◆</span> IMOB</a>
             <span class="header-note">Seu próximo endereço começa aqui.</span>
-            <a class="btn btn-gold btn-sm px-3" href="{% url 'imoveis_list' %}">Ver imóveis</a>
+            <button class="btn btn-outline-light btn-sm px-3" id="theme-toggle" type="button" aria-pressed="false">
+                Modo escuro
+            </button>
+            {% if user.is_authenticated %}
+                <a class="btn btn-gold btn-sm px-3" href="{% url 'imoveis_list' %}">Ver imóveis</a>
+            {% else %}
+                <a class="btn btn-gold btn-sm px-3" href="{% url 'login' %}">Entrar</a>
+            {% endif %}
         </div>
     </header>
 
@@ -89,22 +121,34 @@
                 {% endfor %}
             </div>
         {% endif %}
-        <div class="page-layout">
+        <div class="page-layout{% if request.resolver_match.url_name == 'login' %} page-layout-login{% endif %}">
             <section class="page-content">
                 {% block content %}{% endblock %}
             </section>
-            <aside class="side-menu" aria-label="Menu principal">
-                <div class="side-menu-title">Menu</div>
-                <nav>
-                    <a class="side-link" href="{% url 'home' %}"><span class="side-icon">⌂</span> Início</a>
-                    <a class="side-link" href="{% url 'imoveis_list' %}"><span class="side-icon">⌂</span> Imóveis</a>
-                    <a class="side-link" href="{% url 'bairros_list' %}"><span class="side-icon">⌖</span> Bairros</a>
-                    <a class="side-link" href="{% url 'cidades_list' %}"><span class="side-icon">◎</span> Cidades</a>
-                    <a class="side-link" href="{% url 'corretores_list' %}"><span class="side-icon">♙</span> Corretores</a>
-                    <a class="side-link" href="{% url 'fotos_list' %}"><span class="side-icon">▧</span> Fotos</a>
-                    <a class="side-link" href="/admin/"><span class="side-icon">⚙</span> Administração</a>
-                </nav>
-            </aside>
+            {% if request.resolver_match.url_name != 'login' %}
+                <aside class="side-menu" aria-label="Menu principal">
+                    <div class="side-menu-title">Menu</div>
+                    <nav>
+                        <a class="side-link" href="{% url 'home' %}"><span class="side-icon">⌂</span> Início</a>
+                        <a class="side-link" href="{% url 'imoveis_list' %}"><span class="side-icon">⌂</span> Imóveis</a>
+                        {% if user.is_authenticated %}
+                            <a class="side-link" href="{% url 'bairros_list' %}"><span class="side-icon">⌖</span> Bairros</a>
+                            <a class="side-link" href="{% url 'cidades_list' %}"><span class="side-icon">◎</span> Cidades</a>
+                            <a class="side-link" href="{% url 'corretores_list' %}"><span class="side-icon">♙</span> Corretores</a>
+                            <a class="side-link" href="{% url 'fotos_list' %}"><span class="side-icon">▧</span> Fotos</a>
+                            <a class="side-link" href="/admin/"><span class="side-icon">⚙</span> Administração</a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="side-link w-100 border-0 bg-transparent text-start" type="submit">
+                                    <span class="side-icon">↪</span> Sair ({{ user.username }})
+                                </button>
+                            </form>
+                        {% else %}
+                            <a class="side-link" href="{% url 'login' %}"><span class="side-icon">↪</span> Entrar</a>
+                        {% endif %}
+                    </nav>
+                </aside>
+            {% endif %}
         </div>
     </main>
 
@@ -115,6 +159,82 @@
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            const themeToggle = document.getElementById("theme-toggle");
+
+            function updateThemeToggle() {
+                const isDark = document.documentElement.dataset.bsTheme === "dark";
+                themeToggle.textContent = isDark ? "Modo claro" : "Modo escuro";
+                themeToggle.setAttribute("aria-pressed", String(isDark));
+            }
+
+            updateThemeToggle();
+            themeToggle.addEventListener("click", () => {
+                const nextTheme = document.documentElement.dataset.bsTheme === "dark" ? "light" : "dark";
+                document.documentElement.dataset.bsTheme = nextTheme;
+                localStorage.setItem("imob-theme", nextTheme);
+                document.querySelector('meta[name="theme-color"]').content = nextTheme === "dark" ? "#141c26" : "#10243a";
+                updateThemeToggle();
+            });
+        })();
+    </script>
+    <script>
+        (() => {
+            const form = document.querySelector("form[data-bairros-url]");
+            if (!form) return;
+
+            const cidadeField = form.querySelector("#id_cidade");
+            const bairroField = form.querySelector("#id_bairro");
+            if (!cidadeField || !bairroField) return;
+
+            const defaultBairroLabel = "---------";
+            const errorElement = document.createElement("div");
+            errorElement.className = "text-danger small mt-1";
+            errorElement.setAttribute("role", "alert");
+            bairroField.insertAdjacentElement("afterend", errorElement);
+
+            async function updateBairros(preserveSelection = false) {
+                const selectedBairro = preserveSelection ? bairroField.value : "";
+                const cityId = cidadeField.value;
+                errorElement.textContent = "";
+                bairroField.replaceChildren(new Option(
+                    cityId ? "Carregando bairros..." : "Selecione uma cidade primeiro",
+                    ""
+                ));
+                bairroField.disabled = true;
+
+                if (!cityId) return;
+
+                try {
+                    const url = new URL(form.dataset.bairrosUrl, window.location.origin);
+                    url.searchParams.set("cidade", cityId);
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error("Não foi possível carregar os bairros desta cidade.");
+                    }
+
+                    const bairros = await response.json();
+                    bairroField.replaceChildren(new Option(defaultBairroLabel, ""));
+                    for (const bairro of bairros) {
+                        bairroField.add(new Option(bairro.nome, bairro.id));
+                    }
+                    if (preserveSelection) bairroField.value = selectedBairro;
+                    bairroField.disabled = false;
+                    if (bairros.length === 0) {
+                        bairroField.options[0].textContent = "Nenhum bairro cadastrado";
+                    }
+                } catch (error) {
+                    bairroField.replaceChildren(new Option("Erro ao carregar bairros", ""));
+                    errorElement.textContent = error.message;
+                }
+            }
+
+            cidadeField.addEventListener("change", () => updateBairros());
+            if (cidadeField.value) updateBairros(true);
+            else updateBairros();
+        })();
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
